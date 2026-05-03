@@ -556,7 +556,10 @@
                     }
                     currentNumber = calculatedNumber;
 
-                    if (currentNumber === 0 && isGameActive) {
+                    if (currentNumber === 0) {
+                        if (!isGameActive) {
+                            document.getElementById('hat-modal').classList.add('hidden');
+                        }
                         endGame();
                     }
                 }
@@ -664,7 +667,11 @@
         ];
         let currentPrompt = "";
 
+        let hasEnded = false;
         function endGame() {
+            if (hasEnded) return;
+            hasEnded = true;
+
             triggerNumberChange(0);
             playHooray();
 
@@ -698,6 +705,7 @@
                     set(gameStateRef, { totalClicks: 0 });
                     
                     isGameActive = true;
+                    hasEnded = false;
                     // touchControls.classList.remove('hidden');
                 }
             });
