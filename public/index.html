@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Countdown Nexus</title>
+    <title>Coding Cat Countdown</title>
+    <link rel="icon" type="image/svg+xml" href="AJHeadphones.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body,
@@ -120,7 +121,7 @@
         <div id="hat-modal" class="modal-content glass-panel p-8 rounded-3xl max-w-md w-11/12 text-center fade-in">
             <h1
                 class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                Countdown Nexus
+                Coding Cat Countdown
             </h1>
             <p class="text-gray-300 mb-6 text-sm">
                 Join the collective. Use <strong>WASD</strong> to move and <strong>Spacebar/Click</strong> to fire
@@ -175,6 +176,15 @@
                 class="touch-element absolute bottom-8 right-8 w-20 h-20 rounded-full bg-red-500/40 border border-red-500/60 flex items-center justify-center text-white font-black text-xl shadow-[0_0_15px_rgba(239,68,68,0.5)] active:bg-red-500/70 active:scale-95 transition-transform select-none backdrop-blur-sm">
                 FIRE
             </div>
+        </div>
+
+        <!-- Made By Footer -->
+        <div class="absolute bottom-2 left-0 w-full text-center z-10 pointer-events-none fade-in">
+            <p class="text-xs text-gray-500 font-medium tracking-wide shadow-black drop-shadow-md">
+                Made by <a href="https://codingcat.dev"
+                    class="text-purple-400 hover:text-purple-300 pointer-events-auto transition-colors"
+                    target="_blank">CodingCat.dev</a> with ❤️
+            </p>
         </div>
 
     </div>
@@ -330,7 +340,7 @@
         }
 
         document.getElementById('share-btn').addEventListener('click', () => {
-            const text = `I just helped destroy the Core at the Countdown Nexus while wearing my ${myHat} hat! 💥`;
+            const text = `I just helped destroy the Core at the Coding Cat Countdown while wearing my ${myHat} hat! 💥`;
             const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
             window.open(url, '_blank');
         });
@@ -593,7 +603,7 @@
 
             // Inject YouTube Iframe dynamically
             const ytContainer = document.getElementById('yt-container');
-            ytContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/hmZyyBVbkOQ?autoplay=1&rel=0" title="YouTube Celebration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+            ytContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/N25khadfUag?autoplay=1&rel=0" title="Firebase Data Connect" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
 
             touchControls.classList.add('hidden'); // Hide touch UI
 
