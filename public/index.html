@@ -665,6 +665,66 @@
         }
 
         // --- RENDER LOOP ---
+        let numberParticles = [];
+        let cachedNumberForParticles = -1;
+        let cachedWidthForParticles = -1;
+        const headphoneImg = new Image();
+        headphoneImg.src = "AJHeadphones.svg";
+
+        function updateNumberParticles(newNum) {
+            const offCanvas = document.createElement('canvas');
+            const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+            
+            offCanvas.width = width;
+            offCanvas.height = height;
+            
+            const fontSize = Math.min(width, height) * 0.4;
+            offCtx.font = `900 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+            offCtx.textAlign = "center";
+            offCtx.textBaseline = "middle";
+            offCtx.fillStyle = 'white';
+            offCtx.clearRect(0, 0, width, height);
+            offCtx.fillText(newNum.toString(), width/2, height/2);
+            
+            const imgData = offCtx.getImageData(0, 0, width, height).data;
+            const targetPoints = [];
+            
+            const step = Math.max(8, Math.floor(fontSize / 30));
+            
+            for (let y = 0; y < height; y += step) {
+                for (let x = 0; x < width; x += step) {
+                    const index = (y * width + x) * 4;
+                    if (imgData[index + 3] > 128) {
+                        targetPoints.push({x: x - width/2, y: y - height/2});
+                    }
+                }
+            }
+            
+            targetPoints.sort(() => Math.random() - 0.5);
+            
+            if (numberParticles.length < targetPoints.length) {
+                const toAdd = targetPoints.length - numberParticles.length;
+                for(let i=0; i<toAdd; i++) {
+                    numberParticles.push({
+                        x: (Math.random() - 0.5) * width,
+                        y: (Math.random() - 0.5) * height,
+                        tx: 0, ty: 0,
+                        vx: 0, vy: 0
+                    });
+                }
+            } else if (numberParticles.length > targetPoints.length) {
+                numberParticles.splice(targetPoints.length); 
+            }
+            
+            for(let i=0; i<targetPoints.length; i++) {
+                numberParticles[i].tx = targetPoints[i].x;
+                numberParticles[i].ty = targetPoints[i].y;
+            }
+            
+            cachedNumberForParticles = newNum;
+            cachedWidthForParticles = width;
+        }
+
         function drawCursor(ctx, cx, cy, color, hat, isMe) {
             ctx.save();
             ctx.translate(cx, cy);
@@ -801,31 +861,29 @@
             const ratioToNext = (globalClicks % CLICKS_PER_NUMBER) / CLICKS_PER_NUMBER;
             const baseHue = currentNumber === 0 ? Math.random() * 360 : 280 + ratioToNext * 80;
 
-            ctx.shadowBlur = 40 + Math.sin(Date.now() / 200) * 20;
+            if (cachedNumberForParticles !== currentNumber || cachedWidthForParticles !== width) {
+                updateNumberParticles(currentNumber);
+            }
+
+            ctx.shadowBlur = 10 + Math.sin(Date.now() / 200) * 5;
             ctx.shadowColor = `hsl(${baseHue}, 100%, 60%)`;
 
-            const grad = ctx.createLinearGradient(0, -fontSize / 2, 0, fontSize / 2);
-            grad.addColorStop(0, '#ffffff');
-            grad.addColorStop(1, `hsl(${baseHue}, 100%, 80%)`);
-
-            ctx.fillStyle = grad;
-            ctx.fillText(currentNumber.toString(), 0, 0);
-
-            if (ratioToNext > 0.5 && currentNumber > 0) {
-                ctx.strokeStyle = '#050505';
-                ctx.lineWidth = 4 + (ratioToNext - 0.5) * 10;
-                ctx.beginPath();
-                ctx.moveTo(-fontSize / 3, -fontSize / 3);
-                ctx.lineTo(fontSize / 4, fontSize / 4);
-                ctx.stroke();
-
-                if (ratioToNext > 0.8) {
-                    ctx.beginPath();
-                    ctx.moveTo(fontSize / 3, -fontSize / 4);
-                    ctx.lineTo(-fontSize / 4, fontSize / 3);
-                    ctx.stroke();
+            const particleSize = Math.max(16, fontSize / 20);
+            for(let i=0; i<numberParticles.length; i++) {
+                const p = numberParticles[i];
+                p.vx += (p.tx - p.x) * 0.1;
+                p.vy += (p.ty - p.y) * 0.1;
+                p.vx *= 0.8;
+                p.vy *= 0.8;
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if (headphoneImg.complete) {
+                    ctx.drawImage(headphoneImg, p.x - particleSize/2, p.y - particleSize/2, particleSize, particleSize);
                 }
             }
+
+
 
             ctx.restore();
 
