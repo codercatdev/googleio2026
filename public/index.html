@@ -323,6 +323,49 @@
             });
         }
 
+        function playHooray() {
+            if (!audioCtx) return;
+            const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            const now = audioCtx.currentTime;
+
+            // First short chord
+            chord.slice(0, 3).forEach(freq => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = freq;
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                
+                osc.start(now);
+                osc.stop(now + 0.15);
+            });
+
+            // Second sustained, sweeping chord
+            const later = now + 0.2;
+            chord.forEach(freq => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(freq * 0.8, later);
+                osc.frequency.exponentialRampToValueAtTime(freq, later + 0.1);
+                
+                gain.gain.setValueAtTime(0, later);
+                gain.gain.linearRampToValueAtTime(0.1, later + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, later + 1.5);
+                
+                osc.start(later);
+                osc.stop(later + 1.5);
+            });
+        }
+
         // --- INITIALIZATION ---
         function resize() {
             width = window.innerWidth;
@@ -623,6 +666,7 @@
 
         function endGame() {
             triggerNumberChange(0);
+            playHooray();
 
             const ytContainer = document.getElementById('yt-container');
             ytContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/N25khadfUag?autoplay=1&rel=0" title="Firebase Data Connect" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
