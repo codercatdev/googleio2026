@@ -2,644 +2,817 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Countdown Nexus</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body,
-    html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #050505;
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      touch-action: none;
-      /* Prevent pull-to-refresh on mobile */
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Countdown Nexus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+            /* Prevent pull-to-refresh on mobile */
+        }
 
-    #gameCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
 
-    .glass-panel {
-      background: rgba(20, 20, 25, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
 
-    .hat-btn {
-      transition: all 0.2s ease;
-    }
+        .hat-btn {
+            transition: all 0.2s ease;
+        }
 
-    .hat-btn:hover {
-      transform: scale(1.2) translateY(-5px);
-      background: rgba(255, 255, 255, 0.1);
-    }
+        .hat-btn:hover {
+            transform: scale(1.2) translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
 
-    /* Pulse animation for the central text */
-    @keyframes subtlePulse {
-      0% {
-        transform: scale(1);
-      }
+        /* Pulse animation for the central text */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+            }
 
-      50% {
-        transform: scale(1.02);
-      }
+            50% {
+                transform: scale(1.02);
+            }
 
-      100% {
-        transform: scale(1);
-      }
-    }
+            100% {
+                transform: scale(1);
+            }
+        }
 
-    .animate-pulse-subtle {
-      animation: subtlePulse 2s infinite ease-in-out;
-    }
+        .animate-pulse-subtle {
+            animation: subtlePulse 2s infinite ease-in-out;
+        }
 
-    #ui-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      /* Let clicks pass through to canvas */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-    }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Let clicks pass through to canvas */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
 
-    .modal-content {
-      pointer-events: auto;
-      /* Enable clicks on the modal */
-    }
+        .modal-content {
+            pointer-events: auto;
+            /* Enable clicks on the modal */
+        }
 
-    .fade-in {
-      animation: fadeIn 0.5s ease-out forwards;
-    }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9);
-      }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
 
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-  </style>
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Mobile Controls */
+        #touch-controls {
+            pointer-events: none;
+        }
+
+        .touch-element {
+            pointer-events: auto;
+        }
+    </style>
 </head>
 
 <body class="text-white">
 
-  <!-- The Interactive Canvas -->
-  <canvas id="gameCanvas"></canvas>
+    <!-- The Interactive Canvas -->
+    <canvas id="gameCanvas"></canvas>
 
-  <!-- UI Overlay Layer -->
-  <div id="ui-layer">
+    <!-- UI Overlay Layer -->
+    <div id="ui-layer">
 
-    <!-- Hat Selection Modal (Initial Screen) -->
-    <div id="hat-modal" class="modal-content glass-panel p-8 rounded-3xl max-w-md w-11/12 text-center fade-in">
-      <h1 class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-        Countdown Nexus
-      </h1>
-      <p class="text-gray-300 mb-6 text-sm">
-        Join the collective. Tap to fire energy at the core. Bring the number down to Zero.<br /><br />
-        Pick your cursor's hat to enter:
-      </p>
+        <!-- Hat Selection Modal (Initial Screen) -->
+        <div id="hat-modal" class="modal-content glass-panel p-8 rounded-3xl max-w-md w-11/12 text-center fade-in">
+            <h1
+                class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+                Countdown Nexus
+            </h1>
+            <p class="text-gray-300 mb-6 text-sm">
+                Join the collective. Use <strong>WASD</strong> to move and <strong>Spacebar/Click</strong> to fire
+                energy at the core. Bring the number down to Zero.<br /><br />
+                Pick your cursor's hat to enter:
+            </p>
 
-      <div class="grid grid-cols-4 gap-4 mb-6" id="hat-grid">
-        <!-- Hats injected by JS -->
-      </div>
+            <div class="grid grid-cols-4 gap-4 mb-6" id="hat-grid">
+                <!-- Hats injected by JS -->
+            </div>
 
-      <p class="text-xs text-gray-500 mt-4">Multiplayer interactive experience</p>
+            <p class="text-xs text-gray-500 mt-4">Multiplayer interactive experience</p>
+        </div>
+
+        <!-- Victory / Share Modal (Hidden initially) -->
+        <div id="victory-modal"
+            class="modal-content glass-panel p-6 rounded-3xl max-w-md w-11/12 text-center hidden flex-col items-center z-50">
+            <h2
+                class="text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
+                ZERO REACHED
+            </h2>
+            <p class="text-md text-gray-200 mb-4" id="victory-text">
+                The core has been shattered. You and the community did it!
+            </p>
+
+            <!-- YouTube Embed Container -->
+            <div id="yt-container" class="w-full mb-6 rounded-xl overflow-hidden shadow-2xl bg-black aspect-video">
+                <!-- Embedded via JS -->
+            </div>
+
+            <button id="share-btn"
+                class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                    <polyline points="16 6 12 2 8 6"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+                Share Victory
+            </button>
+        </div>
+
+        <!-- Mobile Touch Controls (Hidden on desktop, shown on first touch) -->
+        <div id="touch-controls" class="hidden absolute bottom-0 left-0 w-full h-48 z-20">
+            <!-- Joystick Base -->
+            <div id="joystick-base"
+                class="touch-element absolute bottom-8 left-8 w-24 h-24 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-sm">
+                <div id="joystick-knob" class="w-10 h-10 rounded-full bg-white/60 shadow-lg"></div>
+            </div>
+            <!-- Fire Button -->
+            <div id="fire-btn"
+                class="touch-element absolute bottom-8 right-8 w-20 h-20 rounded-full bg-red-500/40 border border-red-500/60 flex items-center justify-center text-white font-black text-xl shadow-[0_0_15px_rgba(239,68,68,0.5)] active:bg-red-500/70 active:scale-95 transition-transform select-none backdrop-blur-sm">
+                FIRE
+            </div>
+        </div>
+
     </div>
 
-    <!-- Victory / Share Modal (Hidden initially) -->
-    <div id="victory-modal"
-      class="modal-content glass-panel p-8 rounded-3xl max-w-md w-11/12 text-center hidden flex-col items-center">
-      <h2
-        class="text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
-        ZERO REACHED
-      </h2>
-      <p class="text-lg text-gray-200 mb-8" id="victory-text">
-        The core has been shattered. You and the community did it!
-      </p>
-      <button id="share-btn"
-        class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-          <polyline points="16 6 12 2 8 6"></polyline>
-          <line x1="12" y1="2" x2="12" y2="15"></line>
-        </svg>
-        Share Victory
-      </button>
-    </div>
+    <!-- Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, increment, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  </div>
+        // --- FIREBASE SETUP ---
+        const myFirebaseConfig = {
+            apiKey: "AIzaSyBgBVXDZdYrv2rWh0FgPsRzWpVdphDeYsI",
+            authDomain: "io2026.firebaseapp.com",
+            projectId: "io2026",
+            storageBucket: "io2026.firebasestorage.app",
+            messagingSenderId: "885430189722",
+            appId: "1:885430189722:web:ba45c205e0fe20975f2923",
+            measurementId: "G-39ETYZWEGG"
+        };
 
-  <!-- Application Logic -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, onSnapshot, increment, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'countdown-nexus-prod';
 
-    // --- FIREBASE SETUP ---
-    // 🚨 Replace this with your actual Firebase config from the Firebase Console when deploying!
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    const myFirebaseConfig = {
-      apiKey: "AIzaSyBgBVXDZdYrv2rWh0FgPsRzWpVdphDeYsI",
-      authDomain: "io2026.firebaseapp.com",
-      projectId: "io2026",
-      storageBucket: "io2026.firebasestorage.app",
-      messagingSenderId: "885430189722",
-      appId: "1:885430189722:web:ba45c205e0fe20975f2923",
-      measurementId: "G-39ETYZWEGG"
-    };
+        // --- GLOBAL STATE ---
+        let user = null;
+        let myUserId = null;
+        let myHat = "🤠";
+        let myColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
 
-    // Uses the platform's config if testing here, otherwise falls back to your custom config for production
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'countdown-nexus-prod';
+        // Multiplayer Data
+        const otherCursors = new Map();
+        let globalClicks = 0;
+        let currentNumber = 10;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        // Pacing Logic: Number of scaled points needed to drop the main number by 1
+        const CLICKS_PER_NUMBER = 10;
 
-    // --- GLOBAL STATE ---
-    let user = null;
-    let myUserId = null;
-    let myHat = "🤠";
-    let myColor = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        // Local Game State
+        let localClicksPending = 0;
+        let isGameActive = false;
 
-    // Multiplayer Data
-    const otherCursors = new Map(); // id -> {x, y, targetX, targetY, color, hat, lastUpdate}
-    let globalClicks = 0;
-    let currentNumber = 10;
-    const CLICKS_PER_NUMBER = 100; // How many global hits to decrement the number
+        // Canvas & Entities
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
 
-    // Local Game State
-    let localClicksPending = 0; // Batched clicks to send to firestore
-    let isGameActive = false;
+        const particles = [];
+        const sparks = [];
 
-    // Canvas & Entities
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
+        // Input State
+        let mouseX = 0.5;
+        let mouseY = 0.8;
+        let keys = { w: false, a: false, s: false, d: false, space: false };
+        let joyX = 0;
+        let joyY = 0;
+        let isFiringBtn = false;
+        let lastFireTime = 0;
 
-    const particles = []; // Projectiles fired by users
-    const sparks = [];    // Explosion sparks when hitting the center
+        // Core physics
+        let coreScale = 1;
+        let coreWobble = 0;
 
-    // My local cursor exact position
-    let mouseX = 0.5;
-    let mouseY = 0.8;
-    let isTouching = false;
-
-    // Core physics
-    let coreScale = 1;
-    let coreWobble = 0;
-
-    // --- INITIALIZATION ---
-    function resize() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    // --- UI LOGIC ---
-    const hats = ["1️⃣", "3️⃣", "7️⃣", "🔟", "👑", "🤠", "🚀", "🔥", "🔮", "🍕", "👾", "✨"];
-    const hatGrid = document.getElementById('hat-grid');
-    const hatModal = document.getElementById('hat-modal');
-    const victoryModal = document.getElementById('victory-modal');
-
-    hats.forEach(hat => {
-      const btn = document.createElement('button');
-      btn.className = 'hat-btn text-3xl p-3 rounded-xl border border-gray-700 bg-gray-800 bg-opacity-50 cursor-pointer';
-      btn.innerText = hat;
-      btn.onclick = () => startGame(hat);
-      hatGrid.appendChild(btn);
-    });
-
-    async function startGame(selectedHat) {
-      myHat = selectedHat;
-      hatModal.classList.add('hidden');
-      isGameActive = true;
-
-      // Initial cursor position spawn
-      mouseX = 0.5;
-      mouseY = 0.8;
-      updateMyCursorToDb(true);
-    }
-
-    document.getElementById('share-btn').addEventListener('click', () => {
-      const text = `I just helped destroy the Core at the Countdown Nexus while wearing my ${myHat} hat! 💥`;
-      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
-    });
-
-    // --- AUTH & FIRESTORE LOGIC ---
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
+        // --- AUDIO SYNTHESIS ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
-      } catch (error) {
-        console.error("Auth error:", error);
-      }
-    };
 
-    onAuthStateChanged(auth, (u) => {
-      if (u) {
-        user = u;
-        myUserId = u.uid;
-        setupFirestoreListeners();
-      }
-    });
+        function playPew() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-    function setupFirestoreListeners() {
-      if (!user) return;
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
 
-      // Listen to game state (the giant number)
-      const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
 
-      // Ensure document exists initially
-      setDoc(gameStateRef, { totalClicks: 0 }, { merge: true }).catch(console.error);
-
-      onSnapshot(gameStateRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          globalClicks = data.totalClicks || 0;
-
-          // Calculate current number (10 down to 0)
-          const calculatedNumber = Math.max(0, 10 - Math.floor(globalClicks / CLICKS_PER_NUMBER));
-
-          if (calculatedNumber !== currentNumber) {
-            triggerNumberChange(calculatedNumber);
-          }
-          currentNumber = calculatedNumber;
-
-          if (currentNumber === 0 && isGameActive) {
-            endGame();
-          }
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
         }
-      }, (error) => console.error("GameState sync error:", error));
 
-      // Listen to other cursors
-      const cursorsRef = collection(db, 'artifacts', appId, 'public', 'data', 'cursors');
-      onSnapshot(cursorsRef, (snapshot) => {
-        snapshot.forEach(docSnap => {
-          const id = docSnap.id;
-          if (id === myUserId) return; // Ignore self
+        function playCelebration() {
+            if (!audioCtx) return;
+            // Play a victorious ascending chord (A major)
+            const notes = [440, 554.37, 659.25, 880];
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
 
-          const data = docSnap.data();
-          const now = Date.now();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
 
-          // Filter out stale cursors (> 10 seconds inactive)
-          if (now - data.lastActive > 10000) {
-            otherCursors.delete(id);
-            return;
-          }
+                gain.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.1);
+                gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + i * 0.1 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.1 + 0.6);
 
-          if (otherCursors.has(id)) {
-            // Update target for interpolation
-            const cursor = otherCursors.get(id);
-            cursor.targetX = data.x;
-            cursor.targetY = data.y;
-            cursor.hat = data.hat;
-            cursor.color = data.color;
-            cursor.lastUpdate = now;
-          } else {
-            // New cursor
-            otherCursors.set(id, {
-              x: data.x,
-              y: data.y,
-              targetX: data.x,
-              targetY: data.y,
-              hat: data.hat,
-              color: data.color,
-              lastUpdate: now
+                osc.start(audioCtx.currentTime + i * 0.1);
+                osc.stop(audioCtx.currentTime + i * 0.1 + 0.6);
             });
-          }
-        });
-      }, (error) => console.error("Cursor sync error:", error));
-    }
-
-    // --- MULTIPLAYER WRITE THROTTLING ---
-    let lastCursorUpdate = 0;
-    function updateMyCursorToDb(force = false) {
-      if (!isGameActive || !user) return;
-      const now = Date.now();
-      // Throttle to max 5 updates per second (200ms)
-      if (force || now - lastCursorUpdate > 200) {
-        lastCursorUpdate = now;
-        const myCursorRef = doc(db, 'artifacts', appId, 'public', 'data', 'cursors', myUserId);
-        setDoc(myCursorRef, {
-          x: mouseX,
-          y: mouseY,
-          hat: myHat,
-          color: myColor,
-          lastActive: now
-        }).catch(e => console.error("Cursor update error", e));
-      }
-    }
-
-    // Throttle clicks to batch update global count
-    setInterval(() => {
-      if (localClicksPending > 0 && user) {
-        const clicksToSend = localClicksPending;
-        localClicksPending = 0;
-
-        const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
-        updateDoc(gameStateRef, {
-          totalClicks: increment(clicksToSend)
-        }).catch(e => {
-          console.error("Click update error", e);
-          localClicksPending += clicksToSend; // retry later
-        });
-      }
-    }, 500);
-
-    // --- INPUT HANDLING ---
-    function updateMousePos(clientX, clientY) {
-      if (!isGameActive) return;
-      mouseX = clientX / width;
-      mouseY = clientY / height;
-      updateMyCursorToDb();
-    }
-
-    function handleFire(clientX, clientY) {
-      if (!isGameActive || currentNumber === 0) return;
-      updateMousePos(clientX, clientY);
-
-      // Create particle aimed at center
-      particles.push({
-        x: clientX,
-        y: clientY,
-        color: myColor,
-        speed: 15 + Math.random() * 5,
-        size: 4 + Math.random() * 3
-      });
-
-      localClicksPending++;
-
-      // Local predictive effect
-      coreScale = 1.05;
-      coreWobble = 10;
-    }
-
-    window.addEventListener('mousemove', (e) => updateMousePos(e.clientX, e.clientY));
-    window.addEventListener('mousedown', (e) => handleFire(e.clientX, e.clientY));
-
-    window.addEventListener('touchstart', (e) => {
-      isTouching = true;
-      handleFire(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
-
-    window.addEventListener('touchmove', (e) => {
-      updateMousePos(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
-
-    window.addEventListener('touchend', () => isTouching = false);
-
-    // --- GAME EFFECTS ---
-    function triggerNumberChange(newNum) {
-      // Massive screen shake & particle explosion
-      coreScale = 1.8;
-      coreWobble = 50;
-
-      // Create explosion sparks
-      for (let i = 0; i < 50; i++) {
-        sparks.push({
-          x: width / 2,
-          y: height / 2,
-          vx: (Math.random() - 0.5) * 20,
-          vy: (Math.random() - 0.5) * 20,
-          life: 1.0,
-          color: `hsl(${Math.random() * 360}, 100%, 60%)`
-        });
-      }
-    }
-
-    function endGame() {
-      triggerNumberChange(0);
-      setTimeout(() => {
-        victoryModal.classList.remove('hidden');
-        victoryModal.classList.add('fade-in');
-      }, 1500);
-    }
-
-    // --- RENDER LOOP ---
-    function drawCursor(ctx, cx, cy, color, hat, isMe) {
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      // Draw Cursor Pointer
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(16, 16);
-      ctx.lineTo(5, 16);
-      ctx.lineTo(0, 24);
-      ctx.closePath();
-
-      // Glow
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = color;
-      ctx.fillStyle = color;
-      ctx.fill();
-
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Draw Hat
-      ctx.shadowBlur = 0;
-      ctx.font = "24px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(hat, 8, -5);
-
-      if (isMe) {
-        ctx.font = "10px Arial";
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.fillText("You", 8, 35);
-      }
-
-      ctx.restore();
-    }
-
-    function render() {
-      // Dark trailing effect for light trails
-      ctx.fillStyle = 'rgba(5, 5, 8, 0.25)';
-      ctx.fillRect(0, 0, width, height);
-
-      const centerX = width / 2;
-      const centerY = height / 2;
-
-      // Physics recovery
-      coreScale += (1 - coreScale) * 0.1;
-      coreWobble *= 0.8;
-
-      // Draw Sparks
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-        s.x += s.vx;
-        s.y += s.vy;
-        s.life -= 0.02;
-
-        ctx.beginPath();
-        // Prevent negative radius due to floating point decay before removal
-        ctx.arc(s.x, s.y, Math.max(0, 4 * s.life), 0, Math.PI * 2);
-        ctx.fillStyle = s.color;
-        ctx.fill();
-
-        if (s.life <= 0) sparks.splice(i, 1);
-      }
-
-      // Draw Particles (Lasers)
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-
-        // Move towards center
-        const dx = centerX - p.x;
-        const dy = centerY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 40) { // Hit center
-          coreWobble += 2;
-          coreScale = 1.02;
-          particles.splice(i, 1);
-
-          // Small hit spark
-          sparks.push({
-            x: centerX + (Math.random() - 0.5) * 20,
-            y: centerY + (Math.random() - 0.5) * 20,
-            vx: -dx / dist * 5 + (Math.random() - 0.5) * 5,
-            vy: -dy / dist * 5 + (Math.random() - 0.5) * 5,
-            life: 0.5,
-            color: p.color
-          });
-          continue;
         }
 
-        p.x += (dx / dist) * p.speed;
-        p.y += (dy / dist) * p.speed;
-
-        // Draw trail
-        ctx.beginPath();
-        ctx.moveTo(p.x - (dx / dist) * 20, p.y - (dy / dist) * 20);
-        ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = p.color;
-        ctx.lineWidth = p.size;
-        ctx.lineCap = "round";
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = p.color;
-        ctx.stroke();
-        ctx.shadowBlur = 0; // reset
-      }
-
-      // Draw Central Number
-      ctx.save();
-      let wx = (Math.random() - 0.5) * coreWobble;
-      let wy = (Math.random() - 0.5) * coreWobble;
-      ctx.translate(centerX + wx, centerY + wy);
-      ctx.scale(coreScale, coreScale);
-
-      // Dynamic text styling
-      const fontSize = Math.min(width, height) * 0.4;
-      ctx.font = `900 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      // Neon Glow effect
-      const ratioToNext = (globalClicks % CLICKS_PER_NUMBER) / CLICKS_PER_NUMBER;
-      const baseHue = currentNumber === 0 ? Math.random() * 360 : 280 + ratioToNext * 80;
-
-      ctx.shadowBlur = 40 + Math.sin(Date.now() / 200) * 20;
-      ctx.shadowColor = `hsl(${baseHue}, 100%, 60%)`;
-
-      // Fill Number
-      const grad = ctx.createLinearGradient(0, -fontSize / 2, 0, fontSize / 2);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(1, `hsl(${baseHue}, 100%, 80%)`);
-
-      ctx.fillStyle = grad;
-      ctx.fillText(currentNumber.toString(), 0, 0);
-
-      // Core cracking visual (lines over the number)
-      if (ratioToNext > 0.5 && currentNumber > 0) {
-        ctx.strokeStyle = '#050505';
-        ctx.lineWidth = 4 + (ratioToNext - 0.5) * 10;
-        ctx.beginPath();
-        ctx.moveTo(-fontSize / 3, -fontSize / 3);
-        ctx.lineTo(fontSize / 4, fontSize / 4);
-        ctx.stroke();
-
-        if (ratioToNext > 0.8) {
-          ctx.beginPath();
-          ctx.moveTo(fontSize / 3, -fontSize / 4);
-          ctx.lineTo(-fontSize / 4, fontSize / 3);
-          ctx.stroke();
+        // --- INITIALIZATION ---
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
         }
-      }
+        window.addEventListener('resize', resize);
+        resize();
 
-      ctx.restore();
+        // --- UI LOGIC ---
+        const hats = ["1️⃣", "3️⃣", "7️⃣", "🔟", "👑", "🤠", "🚀", "🔥", "🔮", "🍕", "👾", "✨"];
+        const hatGrid = document.getElementById('hat-grid');
+        const hatModal = document.getElementById('hat-modal');
+        const victoryModal = document.getElementById('victory-modal');
+        const touchControls = document.getElementById('touch-controls');
 
-      // Draw Progress Ring
-      if (currentNumber > 0) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, Math.max(0, fontSize * 0.6), -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * ratioToNext));
-        ctx.strokeStyle = `rgba(255, 255, 255, 0.2)`;
-        ctx.lineWidth = 4;
-        ctx.stroke();
-      }
+        hats.forEach(hat => {
+            const btn = document.createElement('button');
+            btn.className = 'hat-btn text-3xl p-3 rounded-xl border border-gray-700 bg-gray-800 bg-opacity-50 cursor-pointer';
+            btn.innerText = hat;
+            btn.onclick = () => startGame(hat);
+            hatGrid.appendChild(btn);
+        });
 
-      // Draw Multiplayer Cursors
-      const now = Date.now();
-      for (const [id, cursor] of otherCursors.entries()) {
-        // Remove cleanly if dead
-        if (now - cursor.lastUpdate > 5000) {
-          otherCursors.delete(id);
-          continue;
+        async function startGame(selectedHat) {
+            initAudio(); // Required to start AudioContext on user interaction
+            myHat = selectedHat;
+            hatModal.classList.add('hidden');
+            isGameActive = true;
+
+            mouseX = 0.5;
+            mouseY = 0.8;
+            updateMyCursorToDb(true);
         }
 
-        // Linear Interpolation for smooth movement
-        cursor.x += (cursor.targetX - cursor.x) * 0.2;
-        cursor.y += (cursor.targetY - cursor.y) * 0.2;
+        document.getElementById('share-btn').addEventListener('click', () => {
+            const text = `I just helped destroy the Core at the Countdown Nexus while wearing my ${myHat} hat! 💥`;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        });
 
-        const absX = cursor.x * width;
-        const absY = cursor.y * height;
-        drawCursor(ctx, absX, absY, cursor.color, cursor.hat, false);
-      }
+        // --- INPUT HANDLING (Desktop & Mobile) ---
 
-      // Draw My Cursor (if active and mouse is on screen)
-      if (isGameActive && !isTouching) { // hide custom cursor if touching screen
-        const absX = mouseX * width;
-        const absY = mouseY * height;
-        drawCursor(ctx, absX, absY, myColor, myHat, true);
-      }
+        // Mouse Controls
+        window.addEventListener('mousemove', (e) => {
+            if (!isGameActive) return;
+            mouseX = e.clientX / width;
+            mouseY = e.clientY / height;
+        });
+        window.addEventListener('mousedown', (e) => {
+            if (e.target === canvas) handleFire(e.clientX, e.clientY);
+        });
 
-      requestAnimationFrame(render);
-    }
+        // Keyboard Controls (WASD + Space)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') keys.w = true;
+            if (e.key === 'a' || e.key === 'A') keys.a = true;
+            if (e.key === 's' || e.key === 'S') keys.s = true;
+            if (e.key === 'd' || e.key === 'D') keys.d = true;
+            if (e.key === ' ') keys.space = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'W') keys.w = false;
+            if (e.key === 'a' || e.key === 'A') keys.a = false;
+            if (e.key === 's' || e.key === 'S') keys.s = false;
+            if (e.key === 'd' || e.key === 'D') keys.d = false;
+            if (e.key === ' ') keys.space = false;
+        });
 
-    // Start systems
-    initAuth();
-    requestAnimationFrame(render);
+        // Touch Global Override (Show Touch UI)
+        window.addEventListener('touchstart', () => {
+            if (isGameActive) touchControls.classList.remove('hidden');
+        }, { once: true });
 
-  </script>
+        // Virtual Joystick Logic
+        const joyBase = document.getElementById('joystick-base');
+        const joyKnob = document.getElementById('joystick-knob');
+        let joyOrigin = { x: 0, y: 0 };
+        let joyActive = false;
+
+        function updateJoy(cx, cy) {
+            let dx = cx - joyOrigin.x;
+            let dy = cy - joyOrigin.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const maxDist = 30; // Max drag distance
+
+            if (dist > maxDist) {
+                dx = (dx / dist) * maxDist;
+                dy = (dy / dist) * maxDist;
+            }
+            joyX = dx / maxDist;
+            joyY = dy / maxDist;
+            joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+
+        joyBase.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            joyActive = true;
+            const touch = e.changedTouches[0];
+            const rect = joyBase.getBoundingClientRect();
+            joyOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            updateJoy(touch.clientX, touch.clientY);
+        });
+
+        joyBase.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!joyActive) return;
+            updateJoy(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
+
+        const resetJoy = (e) => {
+            e.preventDefault();
+            joyActive = false;
+            joyX = 0; joyY = 0;
+            joyKnob.style.transform = `translate(0px, 0px)`;
+        };
+        joyBase.addEventListener('touchend', resetJoy);
+        joyBase.addEventListener('touchcancel', resetJoy);
+
+        // Virtual Fire Button Logic
+        const fireBtn = document.getElementById('fire-btn');
+        fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isFiringBtn = true; });
+        fireBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFiringBtn = false; });
+        fireBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); isFiringBtn = false; });
+
+        // General touch on canvas directly
+        canvas.addEventListener('touchstart', (e) => {
+            handleFire(e.touches[0].clientX, e.touches[0].clientY, true);
+        }, { passive: false });
+
+
+        function handleFire(clientX, clientY, updateMousePos = true) {
+            if (!isGameActive || currentNumber === 0) return;
+
+            if (updateMousePos) {
+                mouseX = clientX / width;
+                mouseY = clientY / height;
+            }
+
+            playPew();
+
+            particles.push({
+                x: mouseX * width,
+                y: mouseY * height,
+                color: myColor,
+                speed: 15 + Math.random() * 5,
+                size: 4 + Math.random() * 3
+            });
+
+            localClicksPending++;
+            coreScale = 1.05;
+            coreWobble = 10;
+        }
+
+        // --- AUTH & FIRESTORE LOGIC ---
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            if (u) {
+                user = u;
+                myUserId = u.uid;
+                setupFirestoreListeners();
+            }
+        });
+
+        function setupFirestoreListeners() {
+            if (!user) return;
+
+            const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
+            setDoc(gameStateRef, { totalClicks: 0 }, { merge: true }).catch(console.error);
+
+            onSnapshot(gameStateRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    globalClicks = data.totalClicks || 0;
+
+                    const calculatedNumber = Math.max(0, 10 - Math.floor(globalClicks / CLICKS_PER_NUMBER));
+
+                    if (calculatedNumber !== currentNumber) {
+                        triggerNumberChange(calculatedNumber);
+                    }
+                    currentNumber = calculatedNumber;
+
+                    if (currentNumber === 0 && isGameActive) {
+                        endGame();
+                    }
+                }
+            }, (error) => console.error("GameState sync error:", error));
+
+            const cursorsRef = collection(db, 'artifacts', appId, 'public', 'data', 'cursors');
+            onSnapshot(cursorsRef, (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    const id = docSnap.id;
+                    if (id === myUserId) return;
+
+                    const data = docSnap.data();
+                    const now = Date.now();
+
+                    if (now - data.lastActive > 10000) {
+                        otherCursors.delete(id);
+                        return;
+                    }
+
+                    if (otherCursors.has(id)) {
+                        const cursor = otherCursors.get(id);
+                        cursor.targetX = data.x;
+                        cursor.targetY = data.y;
+                        cursor.hat = data.hat;
+                        cursor.color = data.color;
+                        cursor.lastUpdate = now;
+                    } else {
+                        otherCursors.set(id, {
+                            x: data.x,
+                            y: data.y,
+                            targetX: data.x,
+                            targetY: data.y,
+                            hat: data.hat,
+                            color: data.color,
+                            lastUpdate: now
+                        });
+                    }
+                });
+            }, (error) => console.error("Cursor sync error:", error));
+        }
+
+        // --- MULTIPLAYER SYNC ---
+        let lastCursorUpdate = 0;
+        function updateMyCursorToDb(force = false) {
+            if (!isGameActive || !user) return;
+            const now = Date.now();
+            if (force || now - lastCursorUpdate > 200) {
+                lastCursorUpdate = now;
+                const myCursorRef = doc(db, 'artifacts', appId, 'public', 'data', 'cursors', myUserId);
+                setDoc(myCursorRef, {
+                    x: mouseX,
+                    y: mouseY,
+                    hat: myHat,
+                    color: myColor,
+                    lastActive: now
+                }).catch(e => console.error("Cursor update error", e));
+            }
+        }
+
+        // PACING MECHANIC: Scale clicks inversely with active player count
+        setInterval(() => {
+            if (localClicksPending > 0 && user) {
+                // Ensure there is at least 1 player (you).
+                const activePlayers = Math.max(1, otherCursors.size + 1);
+
+                // Divide the raw clicks by the number of players.
+                // If 10 players spam 10 clicks each, we scale it down so it equals the power of 1 player.
+                const scaledClicksToSend = localClicksPending * (1 / activePlayers);
+
+                localClicksPending = 0;
+
+                const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
+                updateDoc(gameStateRef, {
+                    totalClicks: increment(scaledClicksToSend)
+                }).catch(e => {
+                    console.error("Click update error", e);
+                    localClicksPending += scaledClicksToSend * activePlayers; // Revert scaled value on fail
+                });
+            }
+        }, 500);
+
+        // --- GAME EFFECTS ---
+        function triggerNumberChange(newNum) {
+            if (newNum > 0) playCelebration();
+
+            coreScale = 1.8;
+            coreWobble = 50;
+
+            for (let i = 0; i < 50; i++) {
+                sparks.push({
+                    x: width / 2,
+                    y: height / 2,
+                    vx: (Math.random() - 0.5) * 20,
+                    vy: (Math.random() - 0.5) * 20,
+                    life: 1.0,
+                    color: `hsl(${Math.random() * 360}, 100%, 60%)`
+                });
+            }
+        }
+
+        function endGame() {
+            triggerNumberChange(0);
+
+            // Inject YouTube Iframe dynamically
+            const ytContainer = document.getElementById('yt-container');
+            ytContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/hmZyyBVbkOQ?autoplay=1&rel=0" title="YouTube Celebration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+
+            touchControls.classList.add('hidden'); // Hide touch UI
+
+            setTimeout(() => {
+                victoryModal.classList.remove('hidden');
+                victoryModal.classList.add('fade-in');
+            }, 1500);
+        }
+
+        // --- RENDER LOOP ---
+        function drawCursor(ctx, cx, cy, color, hat, isMe) {
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(16, 16);
+            ctx.lineTo(5, 16);
+            ctx.lineTo(0, 24);
+            ctx.closePath();
+
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = color;
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.font = "24px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(hat, 8, -5);
+
+            if (isMe) {
+                ctx.font = "10px Arial";
+                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                ctx.fillText("You", 8, 35);
+            }
+
+            ctx.restore();
+        }
+
+        function render() {
+            // Apply Movement Inputs (WASD & Joystick)
+            if (isGameActive && currentNumber > 0) {
+                const moveSpeed = 0.008;
+
+                // Keyboard Movement
+                if (keys.w) mouseY -= moveSpeed;
+                if (keys.s) mouseY += moveSpeed;
+                if (keys.a) mouseX -= moveSpeed;
+                if (keys.d) mouseX += moveSpeed;
+
+                // Joystick Movement
+                if (joyX !== 0 || joyY !== 0) {
+                    mouseX += joyX * moveSpeed;
+                    mouseY += joyY * moveSpeed;
+                }
+
+                // Clamp within screen
+                mouseX = Math.max(0, Math.min(1, mouseX));
+                mouseY = Math.max(0, Math.min(1, mouseY));
+
+                // Continuous Firing (Spacebar or Virtual Fire Btn)
+                const now = Date.now();
+                if ((keys.space || isFiringBtn) && now - lastFireTime > 100) { // Max ~10 shots/sec
+                    handleFire(mouseX * width, mouseY * height, false);
+                    lastFireTime = now;
+                }
+
+                // Sync position to network
+                updateMyCursorToDb();
+            }
+
+            // Draw Background
+            ctx.fillStyle = 'rgba(5, 5, 8, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            coreScale += (1 - coreScale) * 0.1;
+            coreWobble *= 0.8;
+
+            // Draw Sparks
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                const s = sparks[i];
+                s.x += s.vx;
+                s.y += s.vy;
+                s.life -= 0.02;
+
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, Math.max(0, 4 * s.life), 0, Math.PI * 2);
+                ctx.fillStyle = s.color;
+                ctx.fill();
+
+                if (s.life <= 0) sparks.splice(i, 1);
+            }
+
+            // Draw Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+
+                const dx = centerX - p.x;
+                const dy = centerY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 40) {
+                    coreWobble += 2;
+                    coreScale = 1.02;
+                    particles.splice(i, 1);
+
+                    sparks.push({
+                        x: centerX + (Math.random() - 0.5) * 20,
+                        y: centerY + (Math.random() - 0.5) * 20,
+                        vx: -dx / dist * 5 + (Math.random() - 0.5) * 5,
+                        vy: -dy / dist * 5 + (Math.random() - 0.5) * 5,
+                        life: 0.5,
+                        color: p.color
+                    });
+                    continue;
+                }
+
+                p.x += (dx / dist) * p.speed;
+                p.y += (dy / dist) * p.speed;
+
+                ctx.beginPath();
+                ctx.moveTo(p.x - (dx / dist) * 20, p.y - (dy / dist) * 20);
+                ctx.lineTo(p.x, p.y);
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = p.size;
+                ctx.lineCap = "round";
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = p.color;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // Draw Central Number
+            ctx.save();
+            let wx = (Math.random() - 0.5) * coreWobble;
+            let wy = (Math.random() - 0.5) * coreWobble;
+            ctx.translate(centerX + wx, centerY + wy);
+            ctx.scale(coreScale, coreScale);
+
+            const fontSize = Math.min(width, height) * 0.4;
+            ctx.font = `900 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const ratioToNext = (globalClicks % CLICKS_PER_NUMBER) / CLICKS_PER_NUMBER;
+            const baseHue = currentNumber === 0 ? Math.random() * 360 : 280 + ratioToNext * 80;
+
+            ctx.shadowBlur = 40 + Math.sin(Date.now() / 200) * 20;
+            ctx.shadowColor = `hsl(${baseHue}, 100%, 60%)`;
+
+            const grad = ctx.createLinearGradient(0, -fontSize / 2, 0, fontSize / 2);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(1, `hsl(${baseHue}, 100%, 80%)`);
+
+            ctx.fillStyle = grad;
+            ctx.fillText(currentNumber.toString(), 0, 0);
+
+            if (ratioToNext > 0.5 && currentNumber > 0) {
+                ctx.strokeStyle = '#050505';
+                ctx.lineWidth = 4 + (ratioToNext - 0.5) * 10;
+                ctx.beginPath();
+                ctx.moveTo(-fontSize / 3, -fontSize / 3);
+                ctx.lineTo(fontSize / 4, fontSize / 4);
+                ctx.stroke();
+
+                if (ratioToNext > 0.8) {
+                    ctx.beginPath();
+                    ctx.moveTo(fontSize / 3, -fontSize / 4);
+                    ctx.lineTo(-fontSize / 4, fontSize / 3);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
+
+            // Progress Ring
+            if (currentNumber > 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, Math.max(0, fontSize * 0.6), -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * ratioToNext));
+                ctx.strokeStyle = `rgba(255, 255, 255, 0.2)`;
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+
+            // Other Players
+            const now = Date.now();
+            for (const [id, cursor] of otherCursors.entries()) {
+                if (now - cursor.lastUpdate > 5000) {
+                    otherCursors.delete(id);
+                    continue;
+                }
+
+                cursor.x += (cursor.targetX - cursor.x) * 0.2;
+                cursor.y += (cursor.targetY - cursor.y) * 0.2;
+
+                drawCursor(ctx, cursor.x * width, cursor.y * height, cursor.color, cursor.hat, false);
+            }
+
+            // My Cursor
+            if (isGameActive && currentNumber > 0) {
+                drawCursor(ctx, mouseX * width, mouseY * height, myColor, myHat, true);
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        initAuth();
+        requestAnimationFrame(render);
+
+    </script>
 </body>
 
 </html>
