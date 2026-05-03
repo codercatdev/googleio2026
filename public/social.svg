@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+    <defs>
+        <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+            <stop offset="0%" stop-color="#1a1025" />
+            <stop offset="100%" stop-color="#050505" />
+        </radialGradient>
+
+        <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="25" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+        <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="8" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+        <linearGradient id="numGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#ff99ff" />
+        </linearGradient>
+
+        <g id="cursor">
+            <path d="M0,0 L24,24 L7.5,24 L0,36 Z" stroke="#ffffff" stroke-width="2"/>
+        </g>
+    </defs>
+
+    <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+    <circle cx="600" cy="315" r="220" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="15" />
+    <path d="M 600 95 A 220 220 0 0 1 805 235" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="15" stroke-linecap="round" />
+
+    <line x1="850" y1="480" x2="680" y2="380" stroke="#00ffff" stroke-width="6" filter="url(#laserGlow)" stroke-linecap="round" />
+    <line x1="280" y1="200" x2="520" y2="280" stroke="#ff0055" stroke-width="6" filter="url(#laserGlow)" stroke-linecap="round" />
+    <line x1="900" y1="150" x2="700" y2="250" stroke="#ffaa00" stroke-width="6" filter="url(#laserGlow)" stroke-linecap="round" />
+
+    <text x="600" y="420" font-family="'Segoe UI', Arial, sans-serif" font-weight="900" font-size="320" fill="url(#numGrad)" text-anchor="middle" filter="url(#neonGlow)">10</text>
+
+    <circle cx="680" cy="380" r="8" fill="#00ffff" filter="url(#laserGlow)" />
+    <circle cx="695" cy="370" r="5" fill="#00ffff" filter="url(#laserGlow)" />
+    <circle cx="520" cy="280" r="10" fill="#ff0055" filter="url(#laserGlow)" />
+    <circle cx="505" cy="295" r="6" fill="#ff0055" filter="url(#laserGlow)" />
+    <circle cx="700" cy="250" r="9" fill="#ffaa00" filter="url(#laserGlow)" />
+
+    <g transform="translate(850, 480)">
+        <use href="#cursor" fill="#00ffff" filter="url(#laserGlow)"/>
+        <text x="12" y="-10" font-family="Arial" font-size="40" text-anchor="middle">👾</text>
+        <text x="12" y="55" font-family="Arial" font-size="16" fill="rgba(255,255,255,0.7)" text-anchor="middle">You</text>
+    </g>
+
+    <g transform="translate(280, 200)">
+        <use href="#cursor" fill="#ff0055" filter="url(#laserGlow)"/>
+        <text x="12" y="-10" font-family="Arial" font-size="40" text-anchor="middle">🚀</text>
+    </g>
+
+    <g transform="translate(900, 150)">
+        <use href="#cursor" fill="#ffaa00" filter="url(#laserGlow)"/>
+        <text x="12" y="-10" font-family="Arial" font-size="40" text-anchor="middle">🤠</text>
+    </g>
+
+    <text x="600" y="540" font-family="'Segoe UI', Arial, sans-serif" font-weight="bold" font-size="48" fill="#ffffff" text-anchor="middle" filter="url(#laserGlow)">Coding Cat Countdown</text>
+    <text x="600" y="585" font-family="'Segoe UI', Arial, sans-serif" font-weight="normal" font-size="28" fill="#aaaaaa" text-anchor="middle">Join the massive multiplayer event at io2026.codingcat.dev</text>
+</svg>

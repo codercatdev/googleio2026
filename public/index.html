@@ -5,6 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coding Cat Countdown</title>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Coding Cat Countdown">
+    <meta property="og:description" content="Join the collective. Use WASD to move and Spacebar/Click to fire energy. Bring the number down to Zero.">
+    <meta property="og:image" content="/social.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Coding Cat Countdown">
+    <meta name="twitter:description" content="Join the collective. Use WASD to move and Spacebar/Click to fire energy. Bring the number down to Zero.">
+    <meta name="twitter:image" content="/social.png">
+
     <link rel="icon" type="image/svg+xml" href="AJHeadphones.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -335,11 +348,17 @@
             hatGrid.appendChild(btn);
         });
 
+        let isTouchDevice = false;
+
         async function startGame(selectedHat) {
             initAudio(); // Required to start AudioContext on user interaction
             myHat = selectedHat;
             hatModal.classList.add('hidden');
             isGameActive = true;
+
+            if (isTouchDevice) {
+                touchControls.classList.remove('hidden');
+            }
 
             mouseX = 0.5;
             mouseY = 0.8;
@@ -378,8 +397,9 @@
         });
 
         window.addEventListener('touchstart', () => {
+            isTouchDevice = true;
             if (isGameActive) touchControls.classList.remove('hidden');
-        }, { once: true });
+        }, { passive: true });
 
         const joyBase = document.getElementById('joystick-base');
         const joyKnob = document.getElementById('joystick-knob');
@@ -430,9 +450,7 @@
         fireBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFiringBtn = false; });
         fireBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); isFiringBtn = false; });
 
-        canvas.addEventListener('touchstart', (e) => {
-            handleFire(e.touches[0].clientX, e.touches[0].clientY, true);
-        }, { passive: false });
+        // Canvas touch handling removed for joystick/fire button exclusive use
 
         function handleFire(clientX, clientY, updateMousePos = true) {
             if (!isGameActive || currentNumber === 0) return;
