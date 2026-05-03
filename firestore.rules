@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to gameState and cursor updates to authenticated users before May 20, 2026
+    match /artifacts/{appId}/public/data/gameState/core {
+      allow read: if request.time < timestamp.date(2026, 5, 20);
+      allow write: if request.auth != null && request.time < timestamp.date(2026, 5, 20);
+    }
+    match /artifacts/{appId}/public/data/cursors/{userId} {
+      allow read: if request.time < timestamp.date(2026, 5, 20);
+      allow write: if request.auth != null && request.auth.uid == userId && request.time < timestamp.date(2026, 5, 20);
+    }
+    
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

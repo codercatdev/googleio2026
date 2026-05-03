@@ -125,7 +125,7 @@
             </h1>
             <p class="text-gray-300 mb-6 text-sm">
                 Join the collective. Use <strong>WASD</strong> to move and <strong>Spacebar/Click</strong> to fire
-                energy at the core. Bring the number down to Zero.<br /><br />
+                energy. Bring the number down to Zero.<br /><br />
                 Pick your cursor's hat to enter:
             </p>
 
@@ -144,12 +144,19 @@
                 ZERO REACHED
             </h2>
             <p class="text-md text-gray-200 mb-4" id="victory-text">
-                The core has been shattered. You and the community did it!
+                I helped to countdown Google I/O 2026.
             </p>
 
             <!-- YouTube Embed Container -->
             <div id="yt-container" class="w-full mb-6 rounded-xl overflow-hidden shadow-2xl bg-black aspect-video">
                 <!-- Embedded via JS -->
+            </div>
+
+            <!-- Reset Container -->
+            <div id="reset-container" class="w-full mb-6 hidden">
+                <p class="text-sm text-gray-300 mb-2">Type the phrase below to reset the countdown:</p>
+                <p id="random-prompt-text" class="text-lg font-bold text-white mb-2 select-none"></p>
+                <input type="text" id="reset-input" class="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500" placeholder="Type here..." autocomplete="off">
             </div>
 
             <button id="share-btn"
@@ -193,7 +200,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, increment, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, set, onValue, onChildAdded, onChildChanged, onChildRemoved, update, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         // --- FIREBASE SETUP ---
         const myFirebaseConfig = {
@@ -203,7 +210,8 @@
             storageBucket: "io2026.firebasestorage.app",
             messagingSenderId: "885430189722",
             appId: "1:885430189722:web:ba45c205e0fe20975f2923",
-            measurementId: "G-39ETYZWEGG"
+            measurementId: "G-39ETYZWEGG",
+            databaseURL: "https://io2026-default-rtdb.firebaseio.com"
         };
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
@@ -211,7 +219,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
         // --- GLOBAL STATE ---
         let user = null;
@@ -248,7 +256,7 @@
         let isFiringBtn = false;
         let lastFireTime = 0;
 
-        // Core physics
+        // Physics
         let coreScale = 1;
         let coreWobble = 0;
 
@@ -283,7 +291,6 @@
 
         function playCelebration() {
             if (!audioCtx) return;
-            // Play a victorious ascending chord (A major)
             const notes = [440, 554.37, 659.25, 880];
             notes.forEach((freq, i) => {
                 const osc = audioCtx.createOscillator();
@@ -340,14 +347,12 @@
         }
 
         document.getElementById('share-btn').addEventListener('click', () => {
-            const text = `I just helped destroy the Core at the Coding Cat Countdown while wearing my ${myHat} hat! 💥`;
+            const text = `I just helped countdown Google I/O 2026 while wearing my ${myHat} hat! #GoogleIO`;
             const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
             window.open(url, '_blank');
         });
 
         // --- INPUT HANDLING (Desktop & Mobile) ---
-
-        // Mouse Controls
         window.addEventListener('mousemove', (e) => {
             if (!isGameActive) return;
             mouseX = e.clientX / width;
@@ -357,7 +362,6 @@
             if (e.target === canvas) handleFire(e.clientX, e.clientY);
         });
 
-        // Keyboard Controls (WASD + Space)
         window.addEventListener('keydown', (e) => {
             if (e.key === 'w' || e.key === 'W') keys.w = true;
             if (e.key === 'a' || e.key === 'A') keys.a = true;
@@ -373,12 +377,10 @@
             if (e.key === ' ') keys.space = false;
         });
 
-        // Touch Global Override (Show Touch UI)
         window.addEventListener('touchstart', () => {
             if (isGameActive) touchControls.classList.remove('hidden');
         }, { once: true });
 
-        // Virtual Joystick Logic
         const joyBase = document.getElementById('joystick-base');
         const joyKnob = document.getElementById('joystick-knob');
         let joyOrigin = { x: 0, y: 0 };
@@ -388,7 +390,7 @@
             let dx = cx - joyOrigin.x;
             let dy = cy - joyOrigin.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            const maxDist = 30; // Max drag distance
+            const maxDist = 30; 
 
             if (dist > maxDist) {
                 dx = (dx / dist) * maxDist;
@@ -423,17 +425,14 @@
         joyBase.addEventListener('touchend', resetJoy);
         joyBase.addEventListener('touchcancel', resetJoy);
 
-        // Virtual Fire Button Logic
         const fireBtn = document.getElementById('fire-btn');
         fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isFiringBtn = true; });
         fireBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFiringBtn = false; });
         fireBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); isFiringBtn = false; });
 
-        // General touch on canvas directly
         canvas.addEventListener('touchstart', (e) => {
             handleFire(e.touches[0].clientX, e.touches[0].clientY, true);
         }, { passive: false });
-
 
         function handleFire(clientX, clientY, updateMousePos = true) {
             if (!isGameActive || currentNumber === 0) return;
@@ -458,7 +457,7 @@
             coreWobble = 10;
         }
 
-        // --- AUTH & FIRESTORE LOGIC ---
+        // --- AUTH & RTDB LOGIC ---
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -475,19 +474,18 @@
             if (u) {
                 user = u;
                 myUserId = u.uid;
-                setupFirestoreListeners();
+                setupDatabaseListeners();
             }
         });
 
-        function setupFirestoreListeners() {
+        function setupDatabaseListeners() {
             if (!user) return;
 
-            const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
-            setDoc(gameStateRef, { totalClicks: 0 }, { merge: true }).catch(console.error);
-
-            onSnapshot(gameStateRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+            const gameStateRef = ref(db, `artifacts/${appId}/public/data/gameState/core`);
+            
+            onValue(gameStateRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
                     globalClicks = data.totalClicks || 0;
 
                     const calculatedNumber = Math.max(0, 10 - Math.floor(globalClicks / CLICKS_PER_NUMBER));
@@ -503,40 +501,44 @@
                 }
             }, (error) => console.error("GameState sync error:", error));
 
-            const cursorsRef = collection(db, 'artifacts', appId, 'public', 'data', 'cursors');
-            onSnapshot(cursorsRef, (snapshot) => {
-                snapshot.forEach(docSnap => {
-                    const id = docSnap.id;
-                    if (id === myUserId) return;
+            const cursorsRef = ref(db, `artifacts/${appId}/public/data/cursors`);
+            
+            const handleCursorUpdate = (snapshot) => {
+                const id = snapshot.key;
+                if (id === myUserId) return;
+                const data = snapshot.val();
+                const now = Date.now();
 
-                    const data = docSnap.data();
-                    const now = Date.now();
+                if (now - data.lastActive > 10000) {
+                    otherCursors.delete(id);
+                    return;
+                }
 
-                    if (now - data.lastActive > 10000) {
-                        otherCursors.delete(id);
-                        return;
-                    }
+                if (otherCursors.has(id)) {
+                    const cursor = otherCursors.get(id);
+                    cursor.targetX = data.x;
+                    cursor.targetY = data.y;
+                    cursor.hat = data.hat;
+                    cursor.color = data.color;
+                    cursor.lastUpdate = now;
+                } else {
+                    otherCursors.set(id, {
+                        x: data.x,
+                        y: data.y,
+                        targetX: data.x,
+                        targetY: data.y,
+                        hat: data.hat,
+                        color: data.color,
+                        lastUpdate: now
+                    });
+                }
+            };
 
-                    if (otherCursors.has(id)) {
-                        const cursor = otherCursors.get(id);
-                        cursor.targetX = data.x;
-                        cursor.targetY = data.y;
-                        cursor.hat = data.hat;
-                        cursor.color = data.color;
-                        cursor.lastUpdate = now;
-                    } else {
-                        otherCursors.set(id, {
-                            x: data.x,
-                            y: data.y,
-                            targetX: data.x,
-                            targetY: data.y,
-                            hat: data.hat,
-                            color: data.color,
-                            lastUpdate: now
-                        });
-                    }
-                });
-            }, (error) => console.error("Cursor sync error:", error));
+            onChildAdded(cursorsRef, handleCursorUpdate);
+            onChildChanged(cursorsRef, handleCursorUpdate);
+            onChildRemoved(cursorsRef, (snapshot) => {
+                otherCursors.delete(snapshot.key);
+            });
         }
 
         // --- MULTIPLAYER SYNC ---
@@ -544,10 +546,10 @@
         function updateMyCursorToDb(force = false) {
             if (!isGameActive || !user) return;
             const now = Date.now();
-            if (force || now - lastCursorUpdate > 200) {
+            if (force || now - lastCursorUpdate > 100) {
                 lastCursorUpdate = now;
-                const myCursorRef = doc(db, 'artifacts', appId, 'public', 'data', 'cursors', myUserId);
-                setDoc(myCursorRef, {
+                const myCursorRef = ref(db, `artifacts/${appId}/public/data/cursors/${myUserId}`);
+                set(myCursorRef, {
                     x: mouseX,
                     y: mouseY,
                     hat: myHat,
@@ -557,27 +559,21 @@
             }
         }
 
-        // PACING MECHANIC: Scale clicks inversely with active player count
         setInterval(() => {
             if (localClicksPending > 0 && user) {
-                // Ensure there is at least 1 player (you).
                 const activePlayers = Math.max(1, otherCursors.size + 1);
-
-                // Divide the raw clicks by the number of players.
-                // If 10 players spam 10 clicks each, we scale it down so it equals the power of 1 player.
                 const scaledClicksToSend = localClicksPending * (1 / activePlayers);
-
                 localClicksPending = 0;
 
-                const gameStateRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'core');
-                updateDoc(gameStateRef, {
+                const gameStateRef = ref(db, `artifacts/${appId}/public/data/gameState/core`);
+                update(gameStateRef, {
                     totalClicks: increment(scaledClicksToSend)
                 }).catch(e => {
                     console.error("Click update error", e);
-                    localClicksPending += scaledClicksToSend * activePlayers; // Revert scaled value on fail
+                    localClicksPending += scaledClicksToSend * activePlayers; 
                 });
             }
-        }, 500);
+        }, 200);
 
         // --- GAME EFFECTS ---
         function triggerNumberChange(newNum) {
@@ -598,14 +594,51 @@
             }
         }
 
+        const resetPhrases = [
+            "I love coding cats",
+            "Gemini is awesome",
+            "Firebase realtime database",
+            "WebRTC for the win",
+            "Google IO 2026"
+        ];
+        let currentPrompt = "";
+
         function endGame() {
             triggerNumberChange(0);
 
-            // Inject YouTube Iframe dynamically
             const ytContainer = document.getElementById('yt-container');
             ytContainer.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/N25khadfUag?autoplay=1&rel=0" title="Firebase Data Connect" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
 
-            touchControls.classList.add('hidden'); // Hide touch UI
+            touchControls.classList.add('hidden'); 
+
+            const resetContainer = document.getElementById('reset-container');
+            const promptText = document.getElementById('random-prompt-text');
+            const resetInput = document.getElementById('reset-input');
+            
+            resetContainer.classList.remove('hidden');
+            currentPrompt = resetPhrases[Math.floor(Math.random() * resetPhrases.length)];
+            promptText.innerText = currentPrompt;
+            resetInput.value = "";
+            
+            // Remove previous event listeners by cloning
+            const newResetInput = resetInput.cloneNode(true);
+            resetInput.parentNode.replaceChild(newResetInput, resetInput);
+            
+            newResetInput.addEventListener('input', (e) => {
+                if (e.target.value === currentPrompt) {
+                    newResetInput.value = "";
+                    resetContainer.classList.add('hidden');
+                    victoryModal.classList.add('hidden');
+                    victoryModal.classList.remove('fade-in');
+                    ytContainer.innerHTML = '';
+                    
+                    const gameStateRef = ref(db, `artifacts/${appId}/public/data/gameState/core`);
+                    set(gameStateRef, { totalClicks: 0 });
+                    
+                    isGameActive = true;
+                    // touchControls.classList.remove('hidden');
+                }
+            });
 
             setTimeout(() => {
                 victoryModal.classList.remove('hidden');
@@ -650,38 +683,31 @@
         }
 
         function render() {
-            // Apply Movement Inputs (WASD & Joystick)
             if (isGameActive && currentNumber > 0) {
                 const moveSpeed = 0.008;
 
-                // Keyboard Movement
                 if (keys.w) mouseY -= moveSpeed;
                 if (keys.s) mouseY += moveSpeed;
                 if (keys.a) mouseX -= moveSpeed;
                 if (keys.d) mouseX += moveSpeed;
 
-                // Joystick Movement
                 if (joyX !== 0 || joyY !== 0) {
                     mouseX += joyX * moveSpeed;
                     mouseY += joyY * moveSpeed;
                 }
 
-                // Clamp within screen
                 mouseX = Math.max(0, Math.min(1, mouseX));
                 mouseY = Math.max(0, Math.min(1, mouseY));
 
-                // Continuous Firing (Spacebar or Virtual Fire Btn)
                 const now = Date.now();
-                if ((keys.space || isFiringBtn) && now - lastFireTime > 100) { // Max ~10 shots/sec
+                if ((keys.space || isFiringBtn) && now - lastFireTime > 100) { 
                     handleFire(mouseX * width, mouseY * height, false);
                     lastFireTime = now;
                 }
 
-                // Sync position to network
                 updateMyCursorToDb();
             }
 
-            // Draw Background
             ctx.fillStyle = 'rgba(5, 5, 8, 0.25)';
             ctx.fillRect(0, 0, width, height);
 
@@ -691,7 +717,6 @@
             coreScale += (1 - coreScale) * 0.1;
             coreWobble *= 0.8;
 
-            // Draw Sparks
             for (let i = sparks.length - 1; i >= 0; i--) {
                 const s = sparks[i];
                 s.x += s.vx;
@@ -706,7 +731,6 @@
                 if (s.life <= 0) sparks.splice(i, 1);
             }
 
-            // Draw Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
 
@@ -745,7 +769,6 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Draw Central Number
             ctx.save();
             let wx = (Math.random() - 0.5) * coreWobble;
             let wy = (Math.random() - 0.5) * coreWobble;
@@ -788,7 +811,6 @@
 
             ctx.restore();
 
-            // Progress Ring
             if (currentNumber > 0) {
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, Math.max(0, fontSize * 0.6), -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * ratioToNext));
@@ -797,7 +819,6 @@
                 ctx.stroke();
             }
 
-            // Other Players
             const now = Date.now();
             for (const [id, cursor] of otherCursors.entries()) {
                 if (now - cursor.lastUpdate > 5000) {
@@ -811,7 +832,6 @@
                 drawCursor(ctx, cursor.x * width, cursor.y * height, cursor.color, cursor.hat, false);
             }
 
-            // My Cursor
             if (isGameActive && currentNumber > 0) {
                 drawCursor(ctx, mouseX * width, mouseY * height, myColor, myHat, true);
             }

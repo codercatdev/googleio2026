@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "artifacts": {
+      "$appId": {
+        "public": {
+          "data": {
+            "gameState": {
+              "core": {
+                ".read": "now < 1779235200000",
+                ".write": "auth != null && now < 1779235200000"
+              }
+            },
+            "cursors": {
+              ".read": "now < 1779235200000",
+              "$userId": {
+                ".write": "auth != null && auth.uid === $userId && now < 1779235200000"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
